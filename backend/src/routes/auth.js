@@ -8,12 +8,14 @@ const {
   forgotPassword,
   resetPassword,
   getAllUsers,
+  logoutUser,
 } = require('../controllers/authController');
 
 // Routes publiques
 router.post('/login', login);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
+router.post('/logout', auth(), logoutUser);
 
 // Routes protégées (Admin uniquement)
 router.post(

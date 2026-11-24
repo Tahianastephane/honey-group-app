@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -16,7 +16,6 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import api from '../../services/api';
 
 const menuItems = [
   { name: 'Tableau de bord', path: '/dashboard', icon: LayoutDashboard },
@@ -31,34 +30,26 @@ const menuItems = [
 ];
 
 function Sidebar() {
-  const { logout, user } = useAuth();
+  const { logout, user, users } = useAuth();
   const navigate = useNavigate();
   const [usersOpen, setUsersOpen] = useState(false);
-  const [users, setUsers] = useState([]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  useEffect(() => {
-    if (user?.role === 'admin') {
-      api
-        .get('/auth/users')
-        .then((res) => setUsers(res.data))
-        .catch((err) => console.error(err));
-    }
-  }, [user]);
+ const isOnline = (lastLogin) => {
+  if (!lastLogin) return false;
 
-  // En ligne si connecté il y a moins de 15 minutes
-  const isOnline = (lastLogin) => {
-    if (!lastLogin) return false;
-    const last = new Date(lastLogin);
-    const now = new Date();
-    const diffMinutes = (now - last) / 1000 / 60;
-    return diffMinutes <= 15;
-  };
+  const last = new Date(lastLogin).getTime();
+  if (Number.isNaN(last)) return false;
 
+  const now = Date.now();
+  const diffMinutes = (now - last) / (1000 * 60);
+
+  return diffMinutes >= 0 && diffMinutes <= 15;
+};
   return (
     <aside className="w-64 bg-slate-900 text-white min-h-screen flex flex-col">
       {/* Logo */}
@@ -92,7 +83,6 @@ function Sidebar() {
         {/* ===== UTILISATEURS (Admin uniquement) ===== */}
         {user?.role === 'admin' && (
           <div>
-            {/* Bouton Utilisateurs (déroulant uniquement pour Créer un compte) */}
             <button
               onClick={() => setUsersOpen(!usersOpen)}
               className="flex items-center justify-between w-full px-3 py-2.5 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
@@ -104,7 +94,6 @@ function Sidebar() {
               {usersOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </button>
 
-            {/* Section déroulante : UNIQUEMENT "Créer un compte" */}
             {usersOpen && (
               <div className="ml-4 mt-1">
                 <NavLink
@@ -122,41 +111,41 @@ function Sidebar() {
               </div>
             )}
 
-            {/* Liste des comptes créés — EN BAS de Utilisateurs (section séparée) */}
-           {/* Liste des comptes créés — EN BAS de Utilisateurs (section séparée) */}
-<div className="ml-4 mt-2 space-y-1 border-l border-slate-700 pl-2">
-  {users.map((u) => (
-    <div
-      key={u.id}
-      className="flex items-center gap-2 px-2 py-1.5 text-sm text-slate-400"
-    >
-      {/* Photo ou initiale */}
-      {u.photo ? (
-        <img
-          src={`http://localhost:5000${u.photo}`}
-          alt={u.nom}
-          className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-        />
-      ) : (
-        <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs flex-shrink-0">
-          {u.nom?.charAt(0)?.toUpperCase()}
-        </div>
-      )}
+            {/* Liste des comptes */}
+            <div className="ml-4 mt-2 space-y-1 border-l border-slate-700 pl-2">
+              {(users || []).map((u) => (
+                <div
+                  key={u.id}
+                  className="flex items-center gap-2 px-2 py-1.5 text-sm text-slate-400"
+                >
+                  {/* Photo ou initiale */}
+                  {u.photo ? (
+                    <img
+                      src={`http://localhost:5000${u.photo}`}
+                      alt={u.nom}
+                      className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs flex-shrink-0">
+                      {u.nom?.charAt(0)?.toUpperCase()}
+                    </div>
+                  )}
 
-      {/* Point vert = en ligne / gris = hors ligne */}
-      <span
-        className={`w-2 h-2 rounded-full flex-shrink-0 ${
-          isOnline(u.last_login) ? 'bg-green-500' : 'bg-gray-500'
-        }`}
-      />
+                  {/* Point en ligne / hors ligne */}
+                  <span
+                    className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                      isOnline(u.last_login) ? 'bg-green-500' : 'bg-gray-500'
+                    }`}
+                    title={isOnline(u.last_login) ? 'En ligne' : 'Hors ligne'}
+                  />
 
-      <span className="truncate flex-1">{u.nom}</span>
-      <span className="text-xs text-slate-500 capitalize">
-        {u.role === 'admin' ? 'Admin' : 'Forfaitiste'}
-      </span>
-    </div>
-  ))}
-</div>
+                  <span className="truncate flex-1">{u.nom}</span>
+                  <span className="text-xs text-slate-500 capitalize">
+                    {u.role === 'admin' ? 'Admin' : 'Forfaitiste'}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </nav>

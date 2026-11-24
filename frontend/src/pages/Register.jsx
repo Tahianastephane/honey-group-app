@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
+
 
 function Register() {
   const [form, setForm] = useState({
@@ -14,58 +16,55 @@ function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { refreshUsers } = useAuth();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
-  setMessage('');
-  setLoading(true);
+const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setMessage('');
+    setLoading(true);
 
-  try {
-    const formData = new FormData();
-    formData.append('nom', form.nom);
-    formData.append('email', form.email);
-    formData.append('password', form.password);
-    formData.append('role', form.role);
-    formData.append('telephone', form.telephone || '');
-
-    if (form.photoFile) {
-      formData.append('photo', form.photoFile);
-    }
-
-    const response = await api.post('/auth/register', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-
-    // Si on arrive ici, la création a réussi
-    setMessage('Compte créé avec succès');
-    setForm({
-      nom: '',
-      email: '',
-      password: '',
-      role: 'forfaitiste',
-      telephone: '',
-      photoFile: null,
-    });
-
-    // Recharger la liste (sans faire échouer toute la création)
     try {
-      await fetchUsers();
-    } catch (err) {
-      console.error('Erreur lors du rechargement de la liste :', err);
-    }
+      const formData = new FormData();
+      formData.append('nom', form.nom);
+      formData.append('email', form.email);
+      formData.append('password', form.password);
+      formData.append('role', form.role);
+      formData.append('telephone', form.telephone || '');
 
-  } catch (err) {
-    console.error('Erreur création :', err.response?.data || err.message);
-    setError(err.response?.data?.message || 'Erreur lors de la création du compte');
-  } finally {
-    setLoading(false);
-  }
-};
+      if (form.photoFile) {
+        formData.append('photo', form.photoFile);
+      }
+
+      await api.post('/auth/register', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      // Succès
+      setMessage('Compte créé avec succès');
+      setForm({
+        nom: '',
+        email: '',
+        password: '',
+        role: 'forfaitiste',
+        telephone: '',
+        photoFile: null,
+      });
+
+      // Recharge immédiatement la liste dans la Sidebar
+      await refreshUsers();
+
+    } catch (err) {
+      console.error('Erreur création :', err.response?.data || err.message);
+      setError(err.response?.data?.message || 'Erreur lors de la création du compte');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-lg mx-auto">
@@ -97,9 +96,6 @@ function Register() {
     }}
     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
   />
-  <p className="text-xs text-gray-400 mt-1">
-    Tu peux créer le compte sans photo
-  </p>
 </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>

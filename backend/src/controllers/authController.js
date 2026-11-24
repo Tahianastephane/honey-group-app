@@ -160,6 +160,20 @@ const resetPassword = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la réinitialisation' });
   }
 };
+// ====================== LOGOUT ======================
+const logoutUser = async (req, res) => {
+  try {
+    // Met last_login à NULL → l'utilisateur devient hors ligne immédiatement
+    await pool.query(
+      'UPDATE users SET last_login = NULL WHERE id = $1',
+      [req.user.id]
+    );
+    res.json({ message: 'Déconnexion réussie' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors de la déconnexion' });
+  }
+};
 
 // ====================== LISTE DES UTILISATEURS ======================
 const getAllUsers = async (req, res) => {
@@ -182,4 +196,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   getAllUsers,
+  logoutUser,
 };
