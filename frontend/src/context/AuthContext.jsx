@@ -18,6 +18,8 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
+  
+
   const login = (userData, token) => {
     sessionStorage.setItem('token', token);
     sessionStorage.setItem('user', JSON.stringify(userData));

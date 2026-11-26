@@ -16,6 +16,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import UserEditModal from '../users/UserEditModal';
 
 const menuItems = [
   { name: 'Tableau de bord', path: '/dashboard', icon: LayoutDashboard },
@@ -33,23 +34,18 @@ function Sidebar() {
   const { logout, user, users } = useAuth();
   const navigate = useNavigate();
   const [usersOpen, setUsersOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
- const isOnline = (lastLogin) => {
-  if (!lastLogin) return false;
+  const isOnline = (lastLogin) => {
+    return Boolean(lastLogin);
+  };
 
-  const last = new Date(lastLogin).getTime();
-  if (Number.isNaN(last)) return false;
-
-  const now = Date.now();
-  const diffMinutes = (now - last) / (1000 * 60);
-
-  return diffMinutes >= 0 && diffMinutes <= 15;
-};
   return (
     <aside className="w-64 bg-slate-900 text-white min-h-screen flex flex-col">
       {/* Logo */}
@@ -114,9 +110,11 @@ function Sidebar() {
             {/* Liste des comptes */}
             <div className="ml-4 mt-2 space-y-1 border-l border-slate-700 pl-2">
               {(users || []).map((u) => (
-                <div
+                <button
                   key={u.id}
-                  className="flex items-center gap-2 px-2 py-1.5 text-sm text-slate-400"
+                  type="button"
+                  onClick={() => setSelectedUser(u)}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-slate-400 hover:bg-slate-800 hover:text-white rounded-md text-left"
                 >
                   {/* Photo ou initiale */}
                   {u.photo ? (
@@ -143,7 +141,7 @@ function Sidebar() {
                   <span className="text-xs text-slate-500 capitalize">
                     {u.role === 'admin' ? 'Admin' : 'Forfaitiste'}
                   </span>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -160,6 +158,8 @@ function Sidebar() {
           <span>Déconnexion</span>
         </button>
       </div>
+            <UserEditModal targetUser={selectedUser} onClose={() => setSelectedUser(null)} />
+
     </aside>
   );
 }

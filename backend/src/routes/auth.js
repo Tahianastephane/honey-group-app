@@ -5,6 +5,8 @@ const upload = require('../middlewares/upload');
 const {
   login,
   createUser,
+  deleteUser,
+  updateUser,
   forgotPassword,
   resetPassword,
   getAllUsers,
@@ -25,5 +27,9 @@ router.post(
   createUser
 );
 router.get('/users', auth(['admin']), getAllUsers);
+ // Pour Delete et Update
+router.put('/users/:id', auth(), upload.single('photo'), updateUser);
+router.delete('/users/:id', auth(['admin']), deleteUser);
+
 
 module.exports = router;

@@ -5,7 +5,7 @@ function Header({ title = 'Tableau de bord' }) {
   const { user } = useAuth();
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+    <header className="h-16 shrink-0 z-10 bg-white border-b border-gray-200 flex items-center justify-between px-6">
       <div>
         <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
       </div>

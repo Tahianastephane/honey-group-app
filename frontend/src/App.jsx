@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Register from './pages/Register';
+import Hotels from './pages/Hotels';
 
 // Composant pour protéger les routes
 function PrivateRoute({ children }) {
@@ -44,7 +45,7 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="users" element={<Register />} />
-            {/* Les autres pages (hotels, rooms, etc.) viendront ici */}
+            <Route path="hotels" element={<Hotels />} />
           </Route>
 
           {/* Redirection par défaut */}
